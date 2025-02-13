@@ -64,54 +64,32 @@ void FreeList(ListNode* pNode)
     delete pNode;
 }
 
-void SwitchNodes(ListNode** ppHead, ListNode* pTail, int& left, int& right)
+void SwitchNodes(ListNode** ppHead, ListNode* pTail)
 {
-    if (left >= right)
-        return;     // left and right meet
-
     if (pTail == nullptr)
         return;     // only occurs when there is 1 element
 
-    if (pTail->next == nullptr)
-    {                       // reached the last element
-        ++left;
+    SwitchNodes(ppHead, pTail->next);
+
+    if (*ppHead == nullptr)
+        return;
+    if (*ppHead == pTail || (*ppHead)->next == pTail)
+    {
+        pTail->next = nullptr;
+        *ppHead = nullptr;
         return;
     }
-
-    SwitchNodes(ppHead, pTail->next, left, ++right);
-
-    if (left != 0 && left < right)
-    {                       // list end reached and left and right have not met
-        if (*ppHead != pTail)
-        {                   // if the element count in the list is even, when
-                            //  left and right meet, head is the previous element
-                            //  of the tail. we don't need to do anything in that
-                            //  case
-            // store the next of the left
-            ListNode* pTemp = (*ppHead)->next;
-
-            // link tail to the tail's next element
-            pTail->next->next = pTemp;
-
-            // link left to the right and clean the tail
-            (*ppHead)->next = pTail->next;
-            pTail->next = nullptr;
-
-            // move to the next pair needs to be switched
-            if ((*ppHead)->next != nullptr)
-                *ppHead = (*ppHead)->next->next;
-        }
-        --right;
-        ++left;
-    }
+    
+    ListNode* pNextHead = (*ppHead)->next;
+    (*ppHead)->next = pTail;
+    pTail->next = pNextHead;
+    *ppHead = pNextHead;
 }
 
 ListNode* ReorderList(ListNode* head)
 {
-    int left = 0;
-    int right = 1;
     ListNode* pHead = head;
-    SwitchNodes(&pHead, head, left, right);
+    SwitchNodes(&pHead, head);
     return head;
 }
 
